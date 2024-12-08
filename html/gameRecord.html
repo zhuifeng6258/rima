@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<title>日麻战绩-牌局记录</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
+		<link rel="icon" href="../img/favicon.ico" type ="image/x-icon">
+		<link rel="stylesheet" href="../js/layui/css/layui.css" />
+		<link rel="stylesheet" href="../css/style.css" />
+		<script src="../js/layui/layui.js"></script>
+		<script src="../js/common.js"></script>
+		<style type="text/css">
+			*{
+				cursor :default;
+				margin: 0;
+				padding: 0;
+				outline: 0;
+			}
+			html,body{height:100%;}	/*解决html5中document.body.clientHeight返回0的问题*/
+			html{overflow:hidden;}
+			body{color:black;}
+			body,ul{padding:0;margin:0;font-family:'';}
+			ul li{list-style:none;}
+			img {
+			  -webkit-user-drag: none;
+			}
+			a{
+				text-decoration:none;
+				color:black;
+				cursor: pointer;
+			}
+			
+			/* 定义滚动条样式 */
+			::-webkit-scrollbar {
+				width: 0.2rem;
+				height: 0.2rem;
+				background-color: rgba(240, 240, 240, 1);
+				border-radius: 0.1rem;
+			}
+			/*定义滚动条轨道 内阴影+圆角*/
+			::-webkit-scrollbar-track {
+				box-shadow: inset 0 0 0 rgba(136, 136, 136, .5);
+				border-radius: 0.1rem;
+				background-color: rgba(136, 136, 136, .5);
+			}
+			 
+			/*定义滑块 内阴影+圆角*/
+			::-webkit-scrollbar-thumb {
+				border-radius: 0.1rem;
+				box-shadow: inset 0 0 0 rgba(136, 136, 136, .5);
+				background-color: rgba(136, 136, 136, .5);
+			}
+			
+			.bg{
+				width: 100%;
+				height: 100%;
+				display: table;
+			}
+			.bgcell{
+				width: 100%;
+				height: 100%;
+				text-align: center;
+				display: table-cell;
+				background-image: linear-gradient(to right top, #845ec2, #e65faa, #ff8080, #ffbb61, #f9f871);
+				padding: 2rem;
+			}
+			.top{
+				text-align: justify;
+				text-align-last: justify;
+			}
+			.button{
+				display: inline-block;
+				text-align: center;
+				color: #ffffff;
+			}
+			.button div{
+				display: inline-block;
+				background: #845EC2;
+				border-radius: 1rem;
+				box-shadow: 0 0 1rem rgba(0, 0, 0, 0.6);
+				cursor: pointer;
+				padding: 0.5rem 2rem;
+			}
+			.top-right{
+				display: inline-block;
+			}
+			.center{
+				overflow: auto;
+				height: 100%;
+				width: 80%;
+				margin: 0 auto;
+				padding: 0 2rem;
+			}
+			#screen, #reset{
+				display: inline-block;
+				cursor: pointer;
+				height: 1rem;
+				margin: 0 1rem;
+			}
+			#screen>img, #reset>img{
+				width: auto;
+				height: 100%;
+				cursor: pointer;
+			}
+			#screenDiv{
+				border: 0px solid gray;
+				padding: 1rem;
+				margin: 1rem;
+			}
+			#searchDiv{
+				position: relative;
+				left: 2rem;
+			}
+			.layui-btn{
+				padding: 0 4rem;
+			}
+			.list{
+				overflow:;
+			}
+			.list>ul>li{
+				padding: 1rem 0;
+			}
+			.content{
+				background-image: linear-gradient(to right top, #2589b8, #1b6e9c, #125481, #083b65, #00244a);
+				border-radius: 0.2rem;
+				box-shadow: 0 0 1rem rgba(0, 0, 0, 0.6);
+				border: 1px solid #9D6B10;
+			}
+			.content-top{
+				background-color: rgba(0, 36, 74, 0.5);
+				padding: 0.5rem 1rem;
+				text-align: justify;
+				text-align-last: justify;
+				border-radius: 0.2rem 1rem 0 0;
+			}
+			.content-top>div{
+				display: inline-block;
+			}
+			.content-top>div>span{
+				display: inline-block;
+				color: #F0A010;
+			}
+			.content-top>div:last-child>span{
+				color: #888888;
+				font-size: 0.8rem;
+			}
+			.content-table{
+				display: table;
+				width: 100%;
+				padding: 0.2rem 0;
+			}
+			.content-thead{
+				display: table-header-group;
+				font-size: 0.9rem;
+				color: #888888;
+			}
+			.content-row{
+				display: table-row;
+				font-size: 1rem;
+			}
+			.content-data{
+				display: table-cell;
+				text-align: center;
+				width: 1%;
+				height: 2rem;
+			}
+			.content-row>.content-data:first-child{
+				color: #44DDDD;
+			}
+			.content-row>.content-data:nth-child(2){
+				color: #DDDDDD;
+			}
+			.content-row>.content-data:last-child{
+				color: #FFD44D;
+			}
+			/*改变laypage组件边框及背景颜色*/
+			.layui-laypage a, .layui-laypage button, .layui-laypage input, .layui-laypage select, .layui-laypage span {
+				border: none;
+			}
+			.layui-laypage a, .layui-laypage span, .layui-laypage .layui-laypage-curr .layui-laypage-em, .layui-laypage select, .layui-laypage button, .layui-laypage input{
+				background-color: transparent;
+			}
+		</style>
+	</head>
+	<body class="noselect">
+		<div class="bg">
+			<div class="bgcell">
+				<div class="top">
+					<div class="button"><div onclick="javascript:window.location.href = 'personRecord.html';">个人战绩</div></div>
+					<div class="top-right">
+						<div id="screen" style="display: none;"><img src="../img/screen.svg"/></div>
+						<span>对局数：</span>
+						<span id="count">0</span>
+					</div>
+				</div>
+				<div class="center">
+					<div id="screenDiv" class="layui-form" style="display: none;">
+						<div class="layui-form-item">
+							<div class="layui-inline">
+								<label class="layui-form-label">日期范围</label>
+								<div class="layui-inline" id="laydate">
+									<div class="layui-input-inline">
+										<input type="text" autocomplete="off" name="startDate" id="startDate" class="layui-input" placeholder="开始日期"/>
+									</div>
+									<div class="layui-form-mid">-</div>
+									<div class="layui-input-inline">
+										<input type="text" autocomplete="off" name="endDate" id="endDate" class="layui-input" placeholder="结束日期"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-inline">
+								<label class="layui-form-label">模式</label>
+								<input type="checkbox" name="mode" value="3" lay-filter="mode" lay-text="三人局" lay-verify="required" checked/>
+								<input type="checkbox" name="mode" value="4" lay-filter="mode" lay-text="四人局" lay-verify="required" checked/>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-inline">
+								<label class="layui-form-label">类型</label>
+								<input type="checkbox" name="type" value="east" lay-filter="type" lay-text="东风场" lay-verify="required" checked/>
+								<input type="checkbox" name="type" value="south" lay-filter="type" lay-text="南风场" lay-verify="required" checked/>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-inline">
+								<label class="layui-form-label" for="person">对局者</label>
+								<div class="layui-inline">
+									<input name="person" placeholder="对局者" class="layui-input" id="person"/>
+								</div>
+							</div>
+						</div>
+						<div id="searchDiv">
+							<div class="layui-inline">
+								<button type="submit" lay-submit lay-filter="search" class="layui-btn" id="search">查询</button>
+								<div id="reset"><img src="../img/reset.svg"/></div>
+							</div>
+						</div>
+					</div>
+					<div class="list">
+						<ul>
+							<li>
+								<div class="content">
+									<div class="content-top">
+										<div>
+											<span></span>
+											<span>&nbsp;·&nbsp;</span>
+											<span></span>
+										</div>
+										<div>
+											<span></span>
+										</div>
+									</div>
+									<div class="content-table">
+										<div class="content-thead">
+											<span class="content-data">顺位</span>
+											<span class="content-data">玩家</span>
+											<span class="content-data">点数</span>
+										</div>
+										<div class="content-row">
+											<span class="content-data">1位</span>
+											<span class="content-data"></span>
+											<span class="content-data"></span>
+										</div>
+										<div class="content-row">
+											<span class="content-data">2位</span>
+											<span class="content-data"></span>
+											<span class="content-data"></span>
+										</div>
+										<div class="content-row">
+											<span class="content-data">3位</span>
+											<span class="content-data"></span>
+											<span class="content-data"></span>
+										</div>
+										<div class="content-row">
+											<span class="content-data">4位</span>
+											<span class="content-data"></span>
+											<span class="content-data"></span>
+										</div>
+									</div>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<div id="page"></div>
+				</div>
+			</div>
+		</div>
+		<script>
+			layui.use(function(){
+				var laydate = layui.laydate;
+				laydate.render({
+					elem: '#laydate',
+					range: ['#startDate', '#endDate'],
+					rangeLinked: true // 开启日期范围选择时的区间联动标注模式 ---  2.8+ 新增
+				});
+				var form = layui.form;
+				layui.form.on('submit(search)', function(data) {
+					var startDate = data.field.startDate;
+					var endDate = data.field.endDate;
+					var mode = new Array();
+					document.querySelectorAll("input[name=mode]:checked").forEach(function(currentValue, index, arr){
+						mode.push(currentValue.value);
+					});
+					if(!judgeObject(mode)){
+						layer.msg("至少选择一种模式");
+						return false;
+					}
+					var type = new Array();
+					document.querySelectorAll("input[name=type]:checked").forEach(function(currentValue, index, arr){
+						type.push(currentValue.value);
+					});
+					if(!judgeObject(type)){
+						layer.msg("至少选择一种类型");
+						return false;
+					}
+					var person = data.field.person;
+					loadData({"curr" : 1, "limit" : currentLimit, "startDate" : startDate, "endDate" : endDate, "mode" : mode, "type" : type, "person" : person});
+				});
+				form.render(); // 渲染全部表单
+				var laypage = layui.laypage;
+				var layer = layui.layer;
+				
+				function rendering(json, obj){
+					let ul = document.querySelector(".list>ul");
+					while (ul.firstChild) {
+						ul.removeChild(ul.firstChild);
+					}
+					let data = json.data;
+					if(!judgeObject(data)){
+						ul.appendChild(document.createTextNode("暂无数据"));
+						data = new Array();
+					}
+					laypage.render({
+						elem: 'page', // 元素 id
+						count: json.length, // 数据总数
+						curr: obj.curr,
+						limit: obj.limit,
+						layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip'], // 功能布局
+						jump: function(obj, first){
+							// 首次不执行
+							if(!first){
+								var currentLimit = obj.limit;
+								loadData({"curr" : obj.curr, "limit" : obj.limit, "startDate" : startDate, "endDate" : endDate, "mode" : mode, "type" : type, "person" : person});
+							}
+						}
+					});
+					document.querySelector("#count").innerText = json.length;
+					let error = false;
+					let no;
+					for(let d in data){
+						let l = li.cloneNode(true);
+						if(data[d].mode == 3){
+							if(parseInt(data[d].firstScore) + parseInt(data[d].secondScore) + parseInt(data[d].thirdScore) != 105000){
+								error = true;
+								console.log(data[d]);
+							}
+							l.querySelector(".content-table").removeChild(l.querySelector(".content-row:last-child"));
+							l.querySelector(".content-top>div:first-child>span:first-child").innerText = "三人";
+						}else if(data[d].mode == 4){
+							if(parseInt(data[d].firstScore) + parseInt(data[d].secondScore) + parseInt(data[d].thirdScore) + parseInt(data[d].fourthScore) != 100000){
+								error = true;
+								console.log(data[d]);
+							}
+							l.querySelector(".content-top>div:first-child>span:first-child").innerText = "四人";
+						}
+						if(data[d].type == "east"){
+							l.querySelector(".content-table").removeChild(l.querySelector(".content-table>.content-row:last-child"));
+							l.querySelector(".content-top>div:first-child>span:first-child").innerText = l.querySelector(".content-top>div:first-child>span:first-child").innerText + "东";
+						}else if(data[d].type == "south"){
+							l.querySelector(".content-top>div:first-child>span:first-child").innerText = l.querySelector(".content-top>div:first-child>span:first-child").innerText + "南";
+						}
+						l.querySelector(".content-top>div:nth-child(2)>span:first-child").innerText = data[d].date;
+						l.querySelector(".content-top>div>span:last-child").innerText = data[d].number + "回战";
+						l.querySelector(".content-table>.content-row:nth-child(2)>.content-data:nth-child(2)").innerText = data[d].first;
+						l.querySelector(".content-table>.content-row:nth-child(2)>.content-data:last-child").innerText = data[d].firstScore;
+						l.querySelector(".content-table>.content-row:nth-child(3)>.content-data:nth-child(2)").innerText = data[d].second;
+						l.querySelector(".content-table>.content-row:nth-child(3)>.content-data:last-child").innerText = data[d].secondScore;
+						l.querySelector(".content-table>.content-row:nth-child(4)>.content-data:nth-child(2)").innerText = data[d].third;
+						l.querySelector(".content-table>.content-row:nth-child(4)>.content-data:last-child").innerText = data[d].thirdScore;
+						if(data[d].mode == 4){
+							l.querySelector(".content-table>.content-row:last-child>.content-data:nth-child(2)").innerText = data[d].fourth;
+							l.querySelector(".content-table>.content-row:last-child>.content-data:last-child").innerText = data[d].fourthScore;
+						}
+						ul.appendChild(l);
+						if(error){
+							layer.msg("部分数据有误");
+						}
+					}
+				}
+				
+				function deal(json, obj){
+					let data = new Array();
+					json.data.forEach(function(currentValue, index, arr){
+						let date = new Date(currentValue.date);
+						if(judgeObject(obj.startDate)){
+							let startDate = new Date(obj.startDate);
+							if(date < startDate){
+								return;
+							}
+						}
+						if(judgeObject(obj.endDate)){
+							let endDate = new Date(obj.endDate);
+							if(date > endDate){
+								return;
+							}
+						}
+						if(judgeObject(obj.mode)){
+							if(!obj.mode.includes(currentValue.mode)){
+								return;
+							}
+						}
+						if(judgeObject(obj.type)){
+							if(!obj.type.includes(currentValue.type)){
+								return;
+							}
+						}
+						if(judgeObject(obj.person)){
+							if(currentValue.first != obj.person && currentValue.second != obj.person && currentValue.third != obj.person && currentValue.fourth != obj.person){
+								return;
+							}
+						}
+						data.push(currentValue);
+					});
+					json.data = data;
+					json["length"] = json.data.length;
+					json.data = json.data.slice((parseInt(obj.curr) - 1) * parseInt(obj.limit), parseInt(obj.curr) * parseInt(obj.limit));
+					rendering(json, obj);
+				}
+				
+				function loadData(obj){
+					let xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function(){
+						if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // 当满足返回第四阶段和状态码为200时执行
+							json = JSON.parse(this.responseText);  //转换读取到的文件内容为json格式
+							deal(json, obj);
+						}
+					}
+					xmlhttp.open("GET", "../data/data.json"); // 导入JSON文件
+					xmlhttp.send();
+				}
+				
+				function toggle(dom){
+					if (dom.style.display === "none") {
+						dom.style.display = "block";
+					} else {
+						dom.style.display = "none";
+					}
+				}
+				
+				document.querySelector("#screen").onclick = function(){
+					toggle(document.querySelector("#screenDiv"));
+				};
+				
+				document.querySelector("#reset").onclick = function(){
+					document.querySelector("#startDate").value = "";
+					document.querySelector("#endDate").value = "";
+					document.querySelectorAll("input[name=mode]").forEach(function(currentValue, index, arr){
+						currentValue.checked = "true";
+					});
+					document.querySelectorAll("input[name=type]").forEach(function(currentValue, index, arr){
+						currentValue.checked = "true";
+					});
+					document.querySelector("#person").value = "";
+				};
+				
+				var li = document.querySelector(".list>ul>li");
+				
+				var currentLimit = 10;
+				var startDate = "";
+				var endDate = "";
+				var mode = new Array();
+				mode.push("3");
+				mode.push("4");
+				var type = new Array();
+				type.push("east");
+				type.push("south");
+				var person = "";
+				
+				var json;
+				loadData({"curr" : "1", "limit" : "10"});
+				
+				function isPC() {
+					let userAgentInfo = navigator.userAgent; // 包含有关浏览器的信息
+					// 非手机端
+					let agents = ["Android", "iPhone","SymbianOS", "Windows Phone","iPad", "iPod"];
+					let flag = true;
+					for (let v = 0; v < agents.length; v++) {
+						if (userAgentInfo.indexOf(agents[v]) > 0) {
+							flag = false;
+							break;        
+						}
+					}
+					return flag;
+				}
+				
+				window.addEventListener("load", function(){
+					//移动端搜索界面待完善，暂时只有PC端显示搜索按钮
+					if(isPC()){
+						document.querySelector("#screen").style.display = "inline-block";
+					}
+				});
+			});
+		</script>
+		<script>
+			 window.addEventListener("load", function(){
+				let div = document.createElement("div");
+				let text = document.createTextNode("制作by追风");
+				div.appendChild(text);
+				div.style.position = "fixed";
+				div.style.bottom = "0";
+				div.style.right = "0";
+				div.style.textAlign = "right";
+				div.style.color = "#333333";
+				document.body.appendChild(div);
+			 });
+		</script>
+	</body>
+</html>

@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<title>日麻战绩-个人战绩</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
+		<link rel="icon" href="../img/favicon.ico" type ="image/x-icon">
+		<link rel="stylesheet" href="../js/layui/css/layui.css" />
+		<link rel="stylesheet" href="../css/style.css" />
+		<script src="../js/layui/layui.js"></script>
+		<script src="../js/chart/chart.umd.js"></script>
+		<script src="../js/common.js"></script>
+		<style type="text/css">
+			*{
+				cursor :default;
+				margin: 0;
+				padding: 0;
+				outline: 0;
+			}
+			html,body{height:100%;}	/*解决html5中document.body.clientHeight返回0的问题*/
+			html{overflow:hidden;}
+			body{color:black;}
+			body,ul{padding:0;margin:0;font-family:'';}
+			ul li{list-style:none;}
+			img {
+			  -webkit-user-drag: none;
+			}
+			a{
+				text-decoration:none;
+				color:black;
+				cursor: pointer;
+			}
+			
+			/* 定义滚动条样式 */
+			::-webkit-scrollbar {
+				width: 0.2rem;
+				height: 0.2rem;
+				background-color: rgba(240, 240, 240, 1);
+				border-radius: 0.1rem;
+			}
+			/*定义滚动条轨道 内阴影+圆角*/
+			::-webkit-scrollbar-track {
+				box-shadow: inset 0 0 0 rgba(136, 136, 136, .5);
+				border-radius: 0.1rem;
+				background-color: rgba(136, 136, 136, .5);
+			}
+			 
+			/*定义滑块 内阴影+圆角*/
+			::-webkit-scrollbar-thumb {
+				border-radius: 0.1rem;
+				box-shadow: inset 0 0 0 rgba(136, 136, 136, .5);
+				background-color: rgba(136, 136, 136, .5);
+			}
+			
+			.bg{
+				width: 100%;
+				height: 100%;
+				display: table;
+			}
+			.bgcell{
+				width: 100%;
+				height: 100%;
+				text-align: center;
+				display: table-cell;
+				background-image: linear-gradient(to right top, #845ec2, #e65faa, #ff8080, #ffbb61, #f9f871);
+				padding: 2rem;
+			}
+			.top{
+				text-align: justify;
+				text-align-last: justify;
+			}
+			.button{
+				display: inline-block;
+				text-align: center;
+				color: #ffffff;
+			}
+			.button div{
+				display: inline-block;
+				background: #845EC2;
+				border-radius: 1rem;
+				box-shadow: 0 0 1rem rgba(0, 0, 0, 0.6);
+				cursor: pointer;
+				padding: 0.5rem 2rem;
+			}
+			
+			#searchBar{
+				position: absolute;
+				top: 30%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				width: 30%;
+				height: 2rem;
+				overflow: hidden;
+				border-radius: 1rem;
+				color: #FFFFFF;
+				background-color: rgba(255,255,255,.25);
+				box-shadow: rgba(0,0,0,.2) 0 0 10px;
+				backdrop-filter: blur(10px) saturate(1.5);
+				-webkit-backdrop-filter: blur(10px) saturate(1.5);
+				transition: color .25s,background-color .25s,box-shadow .25s,left .25s,opacity .25s,top .25s,width .25s;
+			}
+			#searchBar:hover {
+				color: #FFFFFF;
+				background-color: rgba(255,255,255,.6);
+				box-shadow: rgba(0,0,0,.3) 0 0 10px;
+				width: 50%;
+			}
+			#inputSearch::placeholder {
+				color: #FFFFFF;
+				text-shadow: 0 0 10px rgba(0,0,0,.3);
+				transition: .25s;
+			}
+			#searchBar:hover #inputSearch::placeholder {
+				color: #646464;
+				text-shadow: 0 0 10px transparent;
+			}
+			.search#searchBar {
+				color: #FFFFFF;
+				background-color: rgba(255,255,255,.9);
+				box-shadow: rgba(0,0,0,.2) 0 0 10px;
+				width: 50%;
+			}
+			#inputSearch {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				line-height: 2rem;
+				color: inherit;
+				background-color: transparent;
+				border: none;
+				outline: 0;
+				text-align: center;
+				caret-color: #888888;
+			}
+			#inputSearch:focus{
+				color: #000000;
+			}
+			#inputSearch::selection {
+				color: #000000;
+				background-color: #DDDDDD;
+			}
+			#searchBar:hover #inputSearch::placeholder {
+				color: #646464;
+				text-shadow: 0 0 10px transparent
+			}
+			.search#searchBar #inputSearch::placeholder {
+				color: transparent;
+				text-shadow: none;
+			}
+			.searchBarBtn {
+				opacity: 0;
+				pointer-events: none;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				position: absolute;
+				top: 0.2rem;
+				right: 0.2rem;
+				width: 1.6rem;
+				height: 1.6rem;
+				border-radius: 50%;
+				cursor: pointer;
+				transition: .25s;
+			}
+			.searchBarBtn>*{
+				cursor: pointer;
+			}
+			.searchBarBtn:hover {
+				background-color: #FFFFFF;
+				filter: brightness(1.1);
+			}
+			.searchBarBtn:active {
+				filter: none;
+				transform: scale(.9);
+			}
+			.search .searchBarBtn {
+				opacity: 1;
+				pointer-events: unset;
+			}
+			#searchSuggestionContainer{
+				display: none;
+				height: 0rem;
+				opacity: 1;
+				z-index: 40;
+				position: absolute;
+				top: calc(30% + 2rem);
+				left: 50%;
+				transform: translate(-50%, 0%);
+				width: 50%;
+				font-size: small;
+				overflow-y: hidden;
+				border-radius: 1rem;
+				-webkit-backdrop-filter: blur(2rem) saturate(1.25);
+				backdrop-filter: blur(2rem) saturate(1.25)
+			}
+			#searchSuggestionContainer>div {
+				height: 2rem;
+				line-height: 2rem;
+				position: relative;
+				white-space: nowrap;
+				overflow: hidden;
+			}
+			#searchSuggestionContainer>div>div {
+				display: -webkit-box;
+				-webkit-box-orient: vertical;
+				-webkit-line-clamp: 1;
+				overflow: hidden;
+				clear: both;
+				height: 2rem;
+				line-height: 2rem;
+				cursor: pointer;
+				background: rgba(0,0,0,.1);
+				color: rgba(255, 255, 255, .8);
+				transition: .25s cubic-bezier(0.65, 0.05, 0.1, 1);
+			}
+			#searchSuggestionContainer>div>img {
+				height: 0.8rem;
+				line-height: 2rem;
+				cursor: pointer;
+				position: absolute;
+				top: 0.6rem;
+				right: 1rem;
+			}
+			#searchSuggestionContainer>div>div.focus, #searchSuggestionContainer>div>div:hover {
+				background: rgba(0,0,0,.2);
+			}
+			
+			.panel{
+				height: 100%;
+				margin: 0 auto;
+				overflow: auto;
+			}
+			.panel-top{
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				margin: 1rem 0;
+			}
+			.tab{
+				display: inline-block;
+				text-align: center;
+				color: #333333;
+				font-weight: bold;
+				letter-spacing: 0.5rem;
+				padding-left: 0.5rem;
+				background: transparent;
+				cursor: pointer;
+				margin: 0.5rem 1rem;
+			}
+			.tab.select{
+				border-bottom-color: #2993A0;
+				border-bottom-width: 2px;
+				border-bottom-style: solid;
+				
+			}
+			.panel-tab{
+				
+			}
+			
+			.panel-tab-title{
+				height: 1rem;
+				margin: 1rem 0;
+			}
+			.panel-tab-title>img{
+				width: auto;
+				height: 100%;
+				cursor: pointer;
+				transform: rotate(0deg);
+				margin: 0.5rem;
+			}
+			
+			.link{
+				cursor: pointer;
+			}
+			.panel-tab-block{
+				display: none;
+			}
+			.show{
+				display: block;
+			}
+			.hidden{
+				display: none;
+			}
+			.canvas{
+				width: 50%;
+				min-width: 200px;
+				margin: 0 auto;
+			}
+			.content-thead{
+				display: table-header-group;
+				font-size: 0.9rem;
+				color: #888888;
+			}
+			.content-row{
+				display: table-row;
+				font-size: 1rem;
+			}
+			.content-data{
+				display: table-cell;
+				text-align: center;
+				width: 1%;
+				height: 2rem;
+			}
+			.content-data span{
+				
+			}
+		</style>
+	</head>
+	<body class="noselect">
+		<div class="bg">
+			<div class="bgcell">
+				<div class="top">
+					<div class="button"><div onclick="javascript:window.location.href = 'gameRecord.html';">牌局记录</div></div>
+				</div>
+				<div id="searchBar">
+					<input id="inputSearch" type="text" name="person" size="30" placeholder="对局者" autocomplete="off"/>
+					<div class="searchBarBtn" id="btnSearch"><img src="../img/search.svg"/></div>
+				</div>
+				<div id="searchSuggestionContainer"></div>
+				<div class="panel" id="content" style="display:none;">
+					<div class="panel-top">
+						<div class="tab select" id="four-button">四人局</div>
+						<div class="tab" id="three-button">三人局</div>
+					</div>
+					<div class="panel-tab" id="panel-tab-four">
+						<div class="panel-tab-title">最近走势</div>
+						<div class="canvas">
+							<canvas id="fourCanvas"></canvas>
+						</div>
+						<div class="panel-tab-title link" id="four-east">东风场<img src="../img/down.svg"/></div>
+						<div class="panel-tab-block" id="four-east-block">
+							<div class="content-table">
+								<div class="content-row">
+									<div class="content-data"><span>一位率</span><span id="four-east-first"></span></div>
+									<div class="content-data"><span>总对局数</span><span id="four-east-count"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>二位率</span><span id="four-east-second"></span></div>
+									<div class="content-data"><span>平均点数</span><span id="four-east-score"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>三位率</span><span id="four-east-third"></span></div>
+									<div class="content-data"><span>平均顺位</span><span id="four-east-ranking"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>四位率</span><span id="four-east-fourth"></span></div>
+									<div class="content-data"><span>被飞率</span><span id="four-east-fly"></span></div>
+								</div>
+							</div>
+						</div>
+						<div class="panel-tab-title link" id="four-south">南风场<img src="../img/down.svg"/></div>
+						<div class="panel-tab-block" id="four-south-block">
+							<div class="content-table">
+								<div class="content-row">
+									<div class="content-data"><span>一位率</span><span id="four-south-first"></span></div>
+									<div class="content-data"><span>总对局数</span><span id="four-south-count"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>二位率</span><span id="four-south-second"></span></div>
+									<div class="content-data"><span>平均点数</span><span id="four-south-score"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>三位率</span><span id="four-south-third"></span></div>
+									<div class="content-data"><span>平均顺位</span><span id="four-south-ranking"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>四位率</span><span id="four-south-fourth"></span></div>
+									<div class="content-data"><span>被飞率</span><span id="four-south-fly"></span></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="panel-tab" id="panel-tab-three" style="display:none;">
+						<div class="panel-tab-title">最近走势</div>
+						<div class="canvas">
+							<canvas id="threeCanvas"></canvas>
+						</div>
+						<div class="panel-tab-title link" id="three-east">东风场<img src="../img/down.svg"/></div>
+						<div class="panel-tab-block" id="three-east-block">
+							<div class="content-table">
+								<div class="content-row">
+									<div class="content-data"><span>一位率</span><span id="three-east-first"></span></div>
+									<div class="content-data"><span>总对局数</span><span id="three-east-count"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>二位率</span><span id="three-east-second"></span></div>
+									<div class="content-data"><span>平均点数</span><span id="three-east-score"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>三位率</span><span id="three-east-third"></span></div>
+									<div class="content-data"><span>平均顺位</span><span id="three-east-ranking"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>被飞率</span><span id="three-east-fly"></span></div>
+									<div class="content-data"></span></div>
+								</div>
+							</div>
+						</div>
+						<div class="panel-tab-title link" id="three-south">南风场<img src="../img/down.svg"/></div>
+						<div class="panel-tab-block" id="three-south-block">
+							<div class="content-table">
+								<div class="content-row">
+									<div class="content-data"><span>一位率</span><span id="three-south-first"></span></div>
+									<div class="content-data"><span>总对局数</span><span id="three-south-count"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>二位率</span><span id="three-south-second"></span></div>
+									<div class="content-data"><span>平均点数</span><span id="three-south-score"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>三位率</span><span id="three-south-third"></span></div>
+									<div class="content-data"><span>平均顺位</span><span id="three-south-ranking"></span></div>
+								</div>
+								<div class="content-row">
+									<div class="content-data"><span>被飞率</span><span id="three-south-fly"></span></div>
+									<div class="content-data"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			layui.use(function(){
+				var layer = layui.layer;
+				let searchBar = document.querySelector("#searchBar");
+				let inputSearch = document.querySelector("#inputSearch");
+				let searchSuggestionContainer = document.querySelector("#searchSuggestionContainer");
+				inputSearch.addEventListener("click", function(event){
+					searchBar.classList.add("search");
+					inputSearch.classList.add("search");
+					searchSuggestionContainer.style.display = "block";
+					let searchHistory = window.localStorage.getItem('searchHistory');
+					if(!judgeObject(searchHistory)){
+						searchHistory = new Array();
+					}else{
+						searchHistory = JSON.parse(searchHistory);
+					}
+					if(searchHistory.length > 0){
+						while (searchSuggestionContainer.firstChild) {
+							searchSuggestionContainer.removeChild(searchSuggestionContainer.firstChild);
+						}
+						searchSuggestionContainer.style.height = (searchHistory.length * 2) + "rem";
+						for(let i in searchHistory){
+							let node = document.createElement("div");
+							node.setAttribute("data", searchHistory[i]);
+							let div = document.createElement("div");
+							div.innerText = searchHistory[i];
+							node.appendChild(div);
+							let icon = document.createElement("img");
+							icon.src = "../img/cross.svg";
+							icon.setAttribute("data", searchHistory[i]);
+							node.appendChild(icon);
+							searchSuggestionContainer.appendChild(node);
+						}
+						document.querySelectorAll("#searchSuggestionContainer>div>div").forEach(function(currentValue, index, arr){
+							currentValue.addEventListener("click", function(event){
+								search(event.target.innerText);
+								event.stopPropagation();
+							});
+						});
+						document.querySelectorAll("#searchSuggestionContainer>div>img").forEach(function(currentValue, index, arr){
+							currentValue.addEventListener("click", function(event){
+								let searchHistory = window.localStorage.getItem('searchHistory');
+								searchHistory = JSON.parse(searchHistory);
+								searchHistory = searchHistory.filter(function(value) {
+									return value !== event.target.getAttribute("data");
+								});
+								window.localStorage.setItem('searchHistory',JSON.stringify(searchHistory));
+								document.querySelector("#searchSuggestionContainer").removeChild(document.querySelector("#searchSuggestionContainer>div[data=" + event.target.getAttribute("data") + "]"));
+								searchSuggestionContainer.style.height = (searchHistory.length * 2) + "rem";
+								event.stopPropagation();
+							});
+						});
+					}
+					event.stopPropagation();
+				});
+				inputSearch.addEventListener("focus", function(){
+					searchBar.classList.add("search");
+					inputSearch.classList.add("search");
+				});
+				document.querySelector(".bgcell").addEventListener("click", function(){
+					searchBar.classList.remove("search");
+					inputSearch.classList.remove("search");
+					searchSuggestionContainer.style.display = "none";
+					inputSearch.value = "";
+				});
+				
+				document.querySelector('#btnSearch').addEventListener("click", function(event){
+					search(inputSearch.value);
+					event.stopPropagation();
+				});
+				
+				window.addEventListener("keydown", function(event){
+					const key = event.key || event.keyCode; // 支持 event.key 和 event.keyCode 
+					if (key === "Enter") {
+						search(inputSearch.value);
+					}
+				});
+				
+				function search(keyword){
+					keyword = keyword.trim();
+					if(keyword.length == 0){
+						return;
+					}
+					let result = getPersonRecord(keyword);
+					if(!result.success){
+						layer.msg(result.message);
+					}else{
+						let searchHistory = window.localStorage.getItem('searchHistory');
+						if(!judgeObject(searchHistory)){
+							searchHistory = new Array();
+						}else{
+							searchHistory = JSON.parse(searchHistory);
+						}
+						if(!searchHistory.includes(keyword)){	//过滤重复搜索记录
+							searchHistory.push(keyword);
+						}
+						while(searchHistory.length > 5){	//保留5条搜索记录
+							searchHistory.shift();
+						}
+						window.localStorage.setItem('searchHistory',JSON.stringify(searchHistory));
+						document.querySelector("#searchBar").style.display = "none";
+						document.querySelector("#content").style.display = "block";
+						searchSuggestionContainer.style.display = "none";
+						fourChart.data.datasets[0].data = result.data.four.lately;
+						threeChart.data.datasets[0].data = result.data.three.lately;
+						document.querySelector("#four-east-first").innerText = result.data.four.east.first;
+						document.querySelector("#four-east-second").innerText = result.data.four.east.second;
+						document.querySelector("#four-east-third").innerText = result.data.four.east.third;
+						document.querySelector("#four-east-fourth").innerText = result.data.four.east.fourth;
+						document.querySelector("#four-east-count").innerText = result.data.four.east.count;
+						document.querySelector("#four-east-score").innerText = result.data.four.east.score;
+						document.querySelector("#four-east-ranking").innerText = result.data.four.east.ranking;
+						document.querySelector("#four-east-fly").innerText = result.data.four.east.fly;
+						document.querySelector("#four-south-first").innerText = result.data.four.south.first;
+						document.querySelector("#four-south-second").innerText = result.data.four.south.second;
+						document.querySelector("#four-south-third").innerText = result.data.four.south.third;
+						document.querySelector("#four-south-fourth").innerText = result.data.four.south.fourth;
+						document.querySelector("#four-south-count").innerText = result.data.four.south.count;
+						document.querySelector("#four-south-score").innerText = result.data.four.south.score;
+						document.querySelector("#four-south-ranking").innerText = result.data.four.south.ranking;
+						document.querySelector("#four-south-fly").innerText = result.data.four.south.fly;
+						document.querySelector("#three-east-first").innerText = result.data.three.east.first;
+						document.querySelector("#three-east-second").innerText = result.data.three.east.second;
+						document.querySelector("#three-east-third").innerText = result.data.three.east.third;
+						document.querySelector("#three-east-count").innerText = result.data.three.east.count;
+						document.querySelector("#three-east-score").innerText = result.data.three.east.score;
+						document.querySelector("#three-east-ranking").innerText = result.data.three.east.ranking;
+						document.querySelector("#three-east-fly").innerText = result.data.three.east.fly;
+						document.querySelector("#three-south-first").innerText = result.data.three.south.first;
+						document.querySelector("#three-south-second").innerText = result.data.three.south.second;
+						document.querySelector("#three-south-third").innerText = result.data.three.south.third;
+						document.querySelector("#three-south-count").innerText = result.data.three.south.count;
+						document.querySelector("#three-south-score").innerText = result.data.three.south.score;
+						document.querySelector("#three-south-ranking").innerText = result.data.three.south.ranking;
+						document.querySelector("#three-south-fly").innerText = result.data.three.south.fly;
+					}
+				}
+				
+				function getPersonRecord(person){
+					let result = new Object();
+					result.success = true;
+					result.message = "";
+					result.data = new Object();
+					if(!judgeObject(json)){
+						result.success = false;
+						result.message = "数据加载中";
+						return result;
+					}
+					let data = json.data;
+					let success = false;
+					for(let d in data){
+						if(data[d].first == person || data[d].second == person || data[d].third == person || data[d].fourth == person){
+							success = true;
+							break;
+						}
+					}
+					if(!success){
+						result.success = false;
+						result.message = "未找到对局者";
+						return result;
+					}
+					result.data.four = new Object();
+					result.data.four.lately = new Array();
+					result.data.four.east = new Object();
+					result.data.four.east.first = 0;
+					result.data.four.east.second = 0;
+					result.data.four.east.third = 0;
+					result.data.four.east.fourth = 0;
+					result.data.four.east.count = 0;
+					result.data.four.east.score = 0;
+					result.data.four.east.ranking = 0;
+					result.data.four.east.fly = 0;
+					result.data.four.south = new Object();
+					result.data.four.south.first = 0;
+					result.data.four.south.second = 0;
+					result.data.four.south.third = 0;
+					result.data.four.south.fourth = 0;
+					result.data.four.south.count = 0;
+					result.data.four.south.score = 0;
+					result.data.four.south.ranking = 0;
+					result.data.four.south.fly = 0;
+					result.data.three = new Object();
+					result.data.three.lately = new Array();
+					result.data.three.east = new Object();
+					result.data.three.east.first = 0;
+					result.data.three.east.second = 0;
+					result.data.three.east.third = 0;
+					result.data.three.east.count = 0;
+					result.data.three.east.score = 0;
+					result.data.three.east.ranking = 0;
+					result.data.three.east.fly = 0;
+					result.data.three.south = new Object();
+					result.data.three.south.first = 0;
+					result.data.three.south.second = 0;
+					result.data.three.south.third = 0;
+					result.data.three.south.count = 0;
+					result.data.three.south.score = 0;
+					result.data.three.south.ranking = 0;
+					result.data.three.south.fly = 0;
+					let tempObject = new Object();
+					tempObject.four = new Object();
+					tempObject.four.east = new Object();
+					tempObject.four.east.first = 0;
+					tempObject.four.east.second = 0;
+					tempObject.four.east.third = 0;
+					tempObject.four.east.fourth = 0;
+					tempObject.four.east.score = 0;
+					tempObject.four.east.ranking = 0;
+					tempObject.four.east.fly = 0;
+					tempObject.four.south = new Object();
+					tempObject.four.south.first = 0;
+					tempObject.four.south.second = 0;
+					tempObject.four.south.third = 0;
+					tempObject.four.south.fourth = 0;
+					tempObject.four.south.score = 0;
+					tempObject.four.south.ranking = 0;
+					tempObject.four.south.fly = 0;
+					tempObject.three = new Object();
+					tempObject.three.east = new Object();
+					tempObject.three.east.first = 0;
+					tempObject.three.east.second = 0;
+					tempObject.three.east.third = 0;
+					tempObject.three.east.score = 0;
+					tempObject.three.east.ranking = 0;
+					tempObject.three.east.fly = 0;
+					tempObject.three.south = new Object();
+					tempObject.three.south.first = 0;
+					tempObject.three.south.second = 0;
+					tempObject.three.south.third = 0;
+					tempObject.three.south.score = 0;
+					tempObject.three.south.ranking = 0;
+					tempObject.three.south.fly = 0;
+					for(let d in data){
+						let tempDataA;
+						let tempDataB;
+						let temp = tempObject;
+						if(data[d].mode == "4"){
+							tempDataA = result.data.four;
+							temp = temp.four;
+						}else if(data[d].mode == "3"){
+							tempDataA = result.data.three;
+							temp = temp.three;
+						}
+						if(data[d].type == "east"){
+							tempDataB = tempDataA.east;
+							temp = temp.east;
+						}else if(data[d].type == "south"){
+							tempDataB = tempDataA.south;
+							temp = temp.south;
+						}
+						if(data[d].first == person){
+							if(tempDataA.lately.length < 10){
+								tempDataA.lately.push({"x":tempDataA.lately.length,"y":1});
+							}
+							temp.first++;
+							tempDataB.count++;
+							temp.score += parseInt(data[d].firstScore);
+							temp.ranking += 1;
+							if(parseInt(data[d].firstScore) < 0){
+								temp.fly++;
+							}
+						}else if(data[d].second == person){
+							if(tempDataA.lately.length < 10){
+								tempDataA.lately.push({"x":tempDataA.lately.length,"y":2});
+							}
+							temp.second++;
+							tempDataB.count++;
+							temp.score += parseInt(data[d].secondScore);
+							temp.ranking += 2;
+							if(parseInt(data[d].secondScore) < 0){
+								temp.fly++;
+							}
+						}else if(data[d].third == person){
+							if(tempDataA.lately.length < 10){
+								tempDataA.lately.push({"x":tempDataA.lately.length,"y":3});
+							}
+							temp.third++;
+							tempDataB.count++;
+							temp.score += parseInt(data[d].thirdScore);
+							temp.ranking += 3;
+							if(parseInt(data[d].thirdScore) < 0){
+								temp.fly++;
+							}
+						}else if(data[d].fourth == person){
+							if(tempDataA.lately.length < 10){
+								tempDataA.lately.push({"x":tempDataA.lately.length,"y":4});
+							}
+							temp.fourth++;
+							tempDataB.count++;
+							temp.score += parseInt(data[d].fourthScore);
+							temp.ranking += 4;
+							if(parseInt(data[d].fourthScore) < 0){
+								temp.fly++;
+							}
+						}
+					}
+					for(let i in result.data.four.lately){
+						result.data.four.lately[i].y = 4 - result.data.four.lately[i].y + 1;
+					}
+					result.data.four.lately.reverse();
+					for(let i in result.data.three.lately){
+						result.data.three.lately[i].y = 3 - result.data.three.lately[i].y + 1;
+					}
+					result.data.three.lately.reverse();
+					if(result.data.four.east.count > 0){
+						result.data.four.east.first = (tempObject.four.east.first / result.data.four.east.count * 100).toFixed(2) + "%";
+						result.data.four.east.second = (tempObject.four.east.second / result.data.four.east.count * 100).toFixed(2) + "%";
+						result.data.four.east.third = (tempObject.four.east.third / result.data.four.east.count * 100).toFixed(2) + "%";
+						result.data.four.east.fourth = (tempObject.four.east.fourth / result.data.four.east.count * 100).toFixed(2) + "%";
+						result.data.four.east.score = Math.round(tempObject.four.east.score / result.data.four.east.count);
+						result.data.four.east.ranking = (tempObject.four.east.ranking / result.data.four.east.count).toFixed(2);
+						result.data.four.east.fly = (tempObject.four.east.fly / result.data.four.east.count * 100).toFixed(2) + "%";
+					}
+					if(result.data.four.south.count > 0){
+						result.data.four.south.first = (tempObject.four.south.first / result.data.four.south.count * 100).toFixed(2) + "%";
+						result.data.four.south.second = (tempObject.four.south.second / result.data.four.south.count * 100).toFixed(2) + "%";
+						result.data.four.south.third = (tempObject.four.south.third / result.data.four.south.count * 100).toFixed(2) + "%";
+						result.data.four.south.fourth = (tempObject.four.south.fourth / result.data.four.south.count * 100).toFixed(2) + "%";
+						result.data.four.south.score = Math.round(tempObject.four.south.score / result.data.four.south.count);
+						result.data.four.south.ranking = (tempObject.four.south.ranking / result.data.four.south.count).toFixed(2);
+						result.data.four.south.fly = (tempObject.four.south.fly / result.data.four.south.count * 100).toFixed(2) + "%";
+					}
+					if(result.data.three.east.count > 0){
+						result.data.three.east.first = (tempObject.three.east.first / result.data.three.east.count * 100).toFixed(2) + "%";
+						result.data.three.east.second = (tempObject.three.east.second / result.data.three.east.count * 100).toFixed(2) + "%";
+						result.data.three.east.third = (tempObject.three.east.third / result.data.three.east.count * 100).toFixed(2) + "%";
+						result.data.three.east.score = Math.round(tempObject.three.east.score / result.data.three.east.count);
+						result.data.three.east.ranking = (tempObject.three.east.ranking / result.data.three.east.count).toFixed(2);
+						result.data.three.east.fly = (tempObject.three.east.fly / result.data.three.east.count * 100).toFixed(2) + "%";
+					}
+					if(result.data.three.south.count > 0){
+						result.data.three.south.first = (tempObject.three.south.first / result.data.three.south.count * 100).toFixed(2) + "%";
+						result.data.three.south.second = (tempObject.three.south.second / result.data.three.south.count * 100).toFixed(2) + "%";
+						result.data.three.south.third = (tempObject.three.south.third / result.data.three.south.count * 100).toFixed(2) + "%";
+						result.data.three.south.score = Math.round(tempObject.three.south.score / result.data.three.south.count);
+						result.data.three.south.ranking = (tempObject.three.south.ranking / result.data.three.south.count).toFixed(2);
+						result.data.three.south.fly = (tempObject.three.south.fly / result.data.three.south.count * 100).toFixed(2)+  "%";
+					}
+					console.log(tempObject);
+					return result;
+				}
+				
+				function loadData(){
+					let xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function(){
+						if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {  // 当满足返回第四阶段和状态码为200时执行
+							json = JSON.parse(this.responseText);  //转换读取到的文件内容为json格式
+						}
+					}
+					xmlhttp.open("GET", "../data/data.json"); // 导入JSON文件
+					xmlhttp.send();
+				}
+				
+				var json;
+				loadData();
+				
+				/**
+				* 旋转元素
+				*/
+				function rotateElement(element, start, end){
+					let d = 30;	// 每次调整的角度
+					let step = (end - start) / d;	//调整次数
+					let s = 0;	//调整次数
+					function animation() {
+					  if (s > step) return;
+					  let deg = (start + d * s) % 360;
+					  element.style.transform = "rotate(" + deg + "deg)"; // 最后一步调整为目标角度
+					  window.requestAnimationFrame(animation);
+					  s++;
+					}
+					window.requestAnimationFrame(animation);
+				}
+				
+				let fourButton = document.querySelector("#four-button");
+				let threeButton = document.querySelector("#three-button");
+				let panelTabFour = document.querySelector("#panel-tab-four");
+				let panelTabThree = document.querySelector("#panel-tab-three");
+				fourButton.addEventListener("click", function(){
+					threeButton.classList.remove("select");
+					fourButton.classList.add("select");
+					panelTabThree.style.display = "none";
+					panelTabFour.style.display = "block";
+				});
+				threeButton.addEventListener("click", function(){
+					fourButton.classList.remove("select");
+					threeButton.classList.add("select");
+					panelTabFour.style.display = "none";
+					panelTabThree.style.display = "block";
+				});
+				
+				let fourEastBlock = document.querySelector("#four-east-block");
+				let fourEastImg = document.querySelector("#four-east>img");
+				document.querySelector("#four-east").addEventListener("click", function(){
+					fourSouthBlock.classList.remove("show");
+					fourEastBlock.classList.toggle("show");
+					let deg = fourEastImg.style.transform.slice(fourEastImg.style.transform.indexOf("(") + 1, fourEastImg.style.transform.indexOf("deg)"));
+					rotateElement(fourEastImg, deg, (deg + 180) % 360);
+				});
+				let fourSouthBlock = document.querySelector("#four-south-block");
+				let fourSouthImg = document.querySelector("#four-south>img");
+				document.querySelector("#four-south").addEventListener("click", function(){
+					fourEastBlock.classList.remove("show");
+					fourSouthBlock.classList.toggle("show");
+					let deg = fourSouthImg.style.transform.slice(fourSouthImg.style.transform.indexOf("(") + 1, fourSouthImg.style.transform.indexOf("deg)"));
+					rotateElement(fourSouthImg, deg, (deg + 180) % 360);
+				});
+				let threeEastBlock = document.querySelector("#three-east-block");
+				let threeEastImg = document.querySelector("#three-east>img");
+				document.querySelector("#three-east").addEventListener("click", function(){
+					threeSouthBlock.classList.remove("show");
+					threeEastBlock.classList.toggle("show");
+					let deg = threeEastImg.style.transform.slice(threeEastImg.style.transform.indexOf("(") + 1, threeEastImg.style.transform.indexOf("deg)"));
+					rotateElement(threeEastImg, deg, (deg + 180) % 360);
+				});
+				let threeSouthBlock = document.querySelector("#three-south-block");
+				let threeSouthImg = document.querySelector("#three-south>img");
+				document.querySelector("#three-south").addEventListener("click", function(){
+					threeEastBlock.classList.remove("show");
+					threeSouthBlock.classList.toggle("show");
+					let deg = threeSouthImg.style.transform.slice(threeSouthImg.style.transform.indexOf("(") + 1, threeSouthImg.style.transform.indexOf("deg)"));
+					rotateElement(threeSouthImg, deg, (deg + 180) % 360);
+				});
+				 
+				var fourDiv = document.querySelector("#fourCanvas");
+				var fourChart = new Chart(fourDiv, {
+					type: "line",
+					data: {
+						labels: "          ",
+						datasets: [{
+							label: "",
+							data: [],
+							borderColor: "#FF8000",
+							borderWidth: 2,
+							pointBackgroundColor: "#FFD000",
+							pointBorderColor: "#FFD000",
+							pointRadius: 5
+						}]
+					},
+					options: {
+						scales: {
+							x:{
+								grid:{
+									display:false
+								},
+								border:{
+									didplay: false
+								}
+							},
+							y:{
+								drawBorder: false, 
+								beginAtZero: false,
+								grid:{
+									display:true
+								},
+								border: {
+									display:false
+								},
+								ticks: {
+									autoSkip: true, // 确保自动跳过多余的标签
+									maxTicksLimit: 4, // 可以根据需要设置最大刻度数，如果需要
+									stepSize: 1, // 可以设置刻度之间的间隔，如果需要
+									callback: function(value) {
+										return value % 1 === 0 ? (4 - Math.floor(value) + 1) + "位" : "";
+									}
+								},
+								min: 1,
+								max: 4
+							}
+						},
+						plugins: {
+							tooltip: {
+								enabled: false
+							},
+							legend: {
+								display: false
+							}
+						}
+					}
+				});
+				var threeDiv = document.querySelector("#threeCanvas");
+				var threeChart = new Chart(threeDiv, {
+					type: "line",
+					data: {
+						labels: "          ",
+						datasets: [{
+							label: "",
+							data: [],
+							borderColor: "#FF8000",
+							borderWidth: 2,
+							pointBackgroundColor: "#FFD000",
+							pointBorderColor: "#FFD000",
+							pointRadius: 5
+						}]
+					},
+					options: {
+						scales: {
+							x:{
+								grid:{
+									display:false
+								},
+								border:{
+									didplay: false
+								}
+							},
+							y:{
+								drawBorder: false, 
+								beginAtZero: false,
+								grid:{
+									display:true
+								},
+								border: {
+									display:false
+								},
+								ticks: {
+									autoSkip: true, // 确保自动跳过多余的标签
+									maxTicksLimit: 3, // 可以根据需要设置最大刻度数，如果需要
+									stepSize: 1, // 可以设置刻度之间的间隔，如果需要
+									callback: function(value) {
+										return value % 1 === 0 ? (3 - Math.floor(value) + 1) + "位" : "";
+									}
+								},
+								min: 1,
+								max: 3
+							}
+						},
+						plugins: {
+							tooltip: {
+								enabled: false
+							},
+							legend: {
+								display: false
+							}
+						}
+					}
+				});
+			});
+		</script>
+		<script>
+			 window.addEventListener("load", function(){
+				let div = document.createElement("div");
+				let text = document.createTextNode("制作by追风");
+				div.appendChild(text);
+				div.style.position = "fixed";
+				div.style.bottom = "0";
+				div.style.right = "0";
+				div.style.textAlign = "right";
+				div.style.color = "#333333";
+				document.body.appendChild(div);
+			 });
+		</script>
+	</body>
+</html>
