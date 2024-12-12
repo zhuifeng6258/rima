@@ -362,7 +362,7 @@
 				document.querySelector("#search").addEventListener("click", function(event){
 					var startDate = document.querySelector("#startDate").value;
 					var endDate = document.querySelector("#endDate").value;
-					if(endDate < startDate){
+					if(judgeObject(startDate) && judgeObject(endDate) && endDate < startDate){
 						layer.msg("结束日期不能小于开始日期");
 						return false;
 					}
