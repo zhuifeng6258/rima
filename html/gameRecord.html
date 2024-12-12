@@ -261,14 +261,11 @@
 				</div>
 				<div class="center">
 					<div id="screenDiv" style="display: none;">
-						<div id="laydate">
-							<div>
-								<input type="text" autocomplete="off" name="startDate" id="startDate" placeholder="开始日期"/>
-							</div>
-							<br/>
-							<div>
-								<input type="text" autocomplete="off" name="endDate" id="endDate" placeholder="结束日期"/>
-							</div>
+						<div>
+							<input type="text" autocomplete="off" name="startDate" id="startDate" placeholder="开始日期"/>
+						</div>
+						<div>
+							<input type="text" autocomplete="off" name="endDate" id="endDate" placeholder="结束日期"/>
 						</div>
 						<div>
 							<div>
@@ -357,13 +354,18 @@
 			layui.use(function(){
 				var laydate = layui.laydate;
 				laydate.render({
-					elem: '#laydate',
-					range: ['#startDate', '#endDate'],
-					rangeLinked: true // 开启日期范围选择时的区间联动标注模式 ---  2.8+ 新增
+					elem: '#startDate'
+				});
+				laydate.render({
+					elem: '#endDate'
 				});
 				document.querySelector("#search").addEventListener("click", function(event){
 					var startDate = document.querySelector("#startDate").value;
 					var endDate = document.querySelector("#endDate").value;
+					if(endDate < startDate){
+						layer.msg("结束日期不能小于开始日期");
+						return false;
+					}
 					var mode = new Array();
 					document.querySelectorAll("input[name=mode]:checked").forEach(function(currentValue, index, arr){
 						mode.push(currentValue.value);
