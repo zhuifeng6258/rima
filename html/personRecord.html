@@ -16,6 +16,7 @@
 				margin: 0;
 				padding: 0;
 				outline: 0;
+				font-size: 1rem;
 			}
 			html,body{height:100%;}	/*解决html5中document.body.clientHeight返回0的问题*/
 			html{overflow:hidden;}
@@ -94,30 +95,30 @@
 				border-radius: 1rem;
 				color: #FFFFFF;
 				background-color: rgba(255,255,255,.25);
-				box-shadow: rgba(0,0,0,.2) 0 0 10px;
-				backdrop-filter: blur(10px) saturate(1.5);
-				-webkit-backdrop-filter: blur(10px) saturate(1.5);
+				box-shadow: rgba(0,0,0,.2) 0 0 1rem;
+				backdrop-filter: blur(1rem) saturate(1.5);
+				-webkit-backdrop-filter: blur(1rem) saturate(1.5);
 				transition: color .25s,background-color .25s,box-shadow .25s,left .25s,opacity .25s,top .25s,width .25s;
 			}
 			#searchBar:hover {
 				color: #FFFFFF;
 				background-color: rgba(255,255,255,.6);
-				box-shadow: rgba(0,0,0,.3) 0 0 10px;
+				box-shadow: rgba(0,0,0,.3) 0 0 1rem;
 				width: 50%;
 			}
 			#inputSearch::placeholder {
 				color: #FFFFFF;
-				text-shadow: 0 0 10px rgba(0,0,0,.3);
+				text-shadow: 0 0 1rem rgba(0,0,0,.3);
 				transition: .25s;
 			}
 			#searchBar:hover #inputSearch::placeholder {
 				color: #646464;
-				text-shadow: 0 0 10px transparent;
+				text-shadow: 0 0 1rem transparent;
 			}
 			.search#searchBar {
-				color: #000000;
+				color: #333333;
 				background-color: rgba(255,255,255,.9);
-				box-shadow: rgba(0,0,0,.2) 0 0 10px;
+				box-shadow: rgba(0,0,0,.2) 0 0 1rem;
 				width: 50%;
 			}
 			#inputSearch {
@@ -133,15 +134,15 @@
 				caret-color: #888888;
 			}
 			#inputSearch:focus{
-				color: #000000;
+				color: #333333;
 			}
 			#inputSearch::selection {
-				color: #000000;
+				color: #333333;
 				background-color: #DDDDDD;
 			}
 			#searchBar:hover #inputSearch::placeholder {
 				color: #646464;
-				text-shadow: 0 0 10px transparent
+				text-shadow: 0 0 1rem transparent
 			}
 			.search#searchBar #inputSearch::placeholder {
 				color: transparent;
@@ -249,7 +250,7 @@
 			}
 			.tab.select{
 				border-bottom-color: #2993A0;
-				border-bottom-width: 2px;
+				border-bottom-width: 0.1rem;
 				border-bottom-style: solid;
 				
 			}
@@ -422,6 +423,7 @@
 			</div>
 		</div>
 		<script>
+			window.localStorage.removeItem("searchHistory");
 			layui.use(function(){
 				var layer = layui.layer;
 				let searchBar = document.querySelector("#searchBar");
@@ -431,7 +433,7 @@
 					searchBar.classList.add("search");
 					inputSearch.classList.add("search");
 					searchSuggestionContainer.style.display = "block";
-					let searchHistory = window.localStorage.getItem('searchHistory');
+					let searchHistory = window.localStorage.getItem("rima-searchHistory");
 					if(!judgeObject(searchHistory)){
 						searchHistory = new Array();
 					}else{
@@ -462,12 +464,12 @@
 						});
 						document.querySelectorAll("#searchSuggestionContainer>div>img").forEach(function(currentValue, index, arr){
 							currentValue.addEventListener("click", function(event){
-								let searchHistory = window.localStorage.getItem('searchHistory');
+								let searchHistory = window.localStorage.getItem("rima-searchHistory");
 								searchHistory = JSON.parse(searchHistory);
 								searchHistory = searchHistory.filter(function(value) {
 									return value !== event.target.getAttribute("data");
 								});
-								window.localStorage.setItem('searchHistory',JSON.stringify(searchHistory));
+								window.localStorage.setItem("rima-searchHistory",JSON.stringify(searchHistory));
 								document.querySelector("#searchSuggestionContainer").removeChild(document.querySelector("#searchSuggestionContainer>div[data=" + event.target.getAttribute("data") + "]"));
 								searchSuggestionContainer.style.height = (searchHistory.length * 2) + "rem";
 								event.stopPropagation();
@@ -513,7 +515,7 @@
 					if(!result.success){
 						layer.msg(result.message);
 					}else{
-						let searchHistory = window.localStorage.getItem('searchHistory');
+						let searchHistory = window.localStorage.getItem("rima-searchHistory");
 						if(!judgeObject(searchHistory)){
 							searchHistory = new Array();
 						}else{
@@ -525,7 +527,7 @@
 						while(searchHistory.length > 5){	//保留5条搜索记录
 							searchHistory.shift();
 						}
-						window.localStorage.setItem('searchHistory',JSON.stringify(searchHistory));
+						window.localStorage.setItem("rima-searchHistory", JSON.stringify(searchHistory));
 						document.querySelector("#searchBar").style.display = "none";
 						document.querySelector("#content").style.display = "block";
 						searchSuggestionContainer.style.display = "none";
