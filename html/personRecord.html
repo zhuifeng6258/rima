@@ -115,7 +115,7 @@
 				text-shadow: 0 0 10px transparent;
 			}
 			.search#searchBar {
-				color: #FFFFFF;
+				color: #000000;
 				background-color: rgba(255,255,255,.9);
 				box-shadow: rgba(0,0,0,.2) 0 0 10px;
 				width: 50%;
@@ -495,7 +495,12 @@
 				window.addEventListener("keydown", function(event){
 					const key = event.key || event.keyCode; // 支持 event.key 和 event.keyCode 
 					if (key === "Enter") {
-						search(inputSearch.value);
+						if(document.activeElement == inputSearch){
+							search(inputSearch.value);
+						}else{
+							inputSearch.focus();
+						}
+						
 					}
 				});
 				
