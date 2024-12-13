@@ -493,15 +493,17 @@
 					event.stopPropagation();
 				});
 				
+				var searchCompleted = false;	//搜索完成后禁用Enter键
 				window.addEventListener("keydown", function(event){
 					const key = event.key || event.keyCode; // 支持 event.key 和 event.keyCode 
 					if (key === "Enter") {
-						if(document.activeElement == inputSearch){
-							search(inputSearch.value);
-						}else{
-							inputSearch.focus();
+						if(!searchCompleted){
+							if(document.activeElement == inputSearch){
+								search(inputSearch.value);
+							}else{
+								inputSearch.focus();
+							}
 						}
-						
 					}
 				});
 				
@@ -514,6 +516,7 @@
 					if(!result.success){
 						layer.msg(result.message);
 					}else{
+						searchCompleted = true;
 						let searchHistory = window.localStorage.getItem("rima-searchHistory");
 						if(!judgeObject(searchHistory)){
 							searchHistory = new Array();
