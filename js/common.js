@@ -33,6 +33,9 @@ function judgeObject(obj){
 			}
 			switch(toRawType(obj)){
 				case "Object":
+					if(Object.keys(obj).length == 0){
+						result = false;
+					}
 					break;
 				case "Array":
 					if(obj.length == 0){

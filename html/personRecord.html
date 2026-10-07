@@ -17,6 +17,7 @@
 				padding: 0;
 				outline: 0;
 				font-size: 1rem;
+				box-sizing: border-box;
 			}
 			html,body{height:100%;}	/*解决html5中document.body.clientHeight返回0的问题*/
 			html{overflow:hidden;}
@@ -267,6 +268,7 @@
 				height: 100%;
 				cursor: pointer;
 				transform: rotate(0deg);
+				transition: transform .3s ease;
 				margin: 0.5rem;
 			}
 			
@@ -393,7 +395,7 @@
 								</div>
 								<div class="content-row">
 									<div class="content-data"><span>被飞率&nbsp;&nbsp;</span><span id="three-east-fly"></span></div>
-									<div class="content-data"></span></div>
+									<div class="content-data"></div>
 								</div>
 							</div>
 						</div>
@@ -469,7 +471,7 @@
 									return value !== event.target.getAttribute("data");
 								});
 								window.localStorage.setItem("rima-searchHistory",JSON.stringify(searchHistory));
-								document.querySelector("#searchSuggestionContainer").removeChild(document.querySelector("#searchSuggestionContainer>div[data=" + event.target.getAttribute("data") + "]"));
+								document.querySelector("#searchSuggestionContainer").removeChild(document.querySelector("#searchSuggestionContainer>div[data=\"" + CSS.escape(event.target.getAttribute("data")) + "\"]"));
 								searchSuggestionContainer.style.height = (searchHistory.length * 2) + "rem";
 								event.stopPropagation();
 							});
@@ -535,6 +537,8 @@
 						searchSuggestionContainer.style.display = "none";
 						fourChart.data.datasets[0].data = result.data.four.lately;
 						threeChart.data.datasets[0].data = result.data.three.lately;
+						fourChart.update();
+						threeChart.update();
 						document.querySelector("#four-east-first").innerText = result.data.four.east.count != 0 ? result.data.four.east.first : "--/--";
 						document.querySelector("#four-east-second").innerText = result.data.four.east.count != 0 ? result.data.four.east.second : "--/--";
 						document.querySelector("#four-east-third").innerText = result.data.four.east.count != 0 ? result.data.four.east.third : "--/--";
@@ -785,23 +789,6 @@
 				var json;
 				loadData();
 				
-				/**
-				* 旋转元素
-				*/
-				function rotateElement(element, start, end){
-					let d = 30;	// 每次调整的角度
-					let step = (end - start) / d;	//调整次数
-					let s = 0;	//调整次数
-					function animation() {
-					  if (s > step) return;
-					  let deg = (start + d * s) % 360;
-					  element.style.transform = "rotate(" + deg + "deg)"; // 最后一步调整为目标角度
-					  window.requestAnimationFrame(animation);
-					  s++;
-					}
-					window.requestAnimationFrame(animation);
-				}
-				
 				let fourButton = document.querySelector("#four-button");
 				let threeButton = document.querySelector("#three-button");
 				let panelTabFour = document.querySelector("#panel-tab-four");
@@ -823,36 +810,40 @@
 				let fourEastImg = document.querySelector("#four-east>img");
 				document.querySelector("#four-east").addEventListener("click", function(){
 					fourEastBlock.classList.toggle("show");
-					let deg = fourEastImg.style.transform.slice(fourEastImg.style.transform.indexOf("(") + 1, fourEastImg.style.transform.indexOf("deg)"));
-					rotateElement(fourEastImg, deg, (deg + 180) % 360);
+					let m = fourEastImg.style.transform.match(/rotate\(([-\d.]+)deg\)/);
+					let deg = m ? parseFloat(m[1]) : 0;
+					fourEastImg.style.transform = "rotate(" + ((deg + 180) % 360) + "deg)";
 				});
 				let fourSouthBlock = document.querySelector("#four-south-block");
 				let fourSouthImg = document.querySelector("#four-south>img");
 				document.querySelector("#four-south").addEventListener("click", function(){
 					fourSouthBlock.classList.toggle("show");
-					let deg = fourSouthImg.style.transform.slice(fourSouthImg.style.transform.indexOf("(") + 1, fourSouthImg.style.transform.indexOf("deg)"));
-					rotateElement(fourSouthImg, deg, (deg + 180) % 360);
+					let m = fourSouthImg.style.transform.match(/rotate\(([-\d.]+)deg\)/);
+					let deg = m ? parseFloat(m[1]) : 0;
+					fourSouthImg.style.transform = "rotate(" + ((deg + 180) % 360) + "deg)";
 				});
 				let threeEastBlock = document.querySelector("#three-east-block");
 				let threeEastImg = document.querySelector("#three-east>img");
 				document.querySelector("#three-east").addEventListener("click", function(){
 					threeEastBlock.classList.toggle("show");
-					let deg = threeEastImg.style.transform.slice(threeEastImg.style.transform.indexOf("(") + 1, threeEastImg.style.transform.indexOf("deg)"));
-					rotateElement(threeEastImg, deg, (deg + 180) % 360);
+					let m = threeEastImg.style.transform.match(/rotate\(([-\d.]+)deg\)/);
+					let deg = m ? parseFloat(m[1]) : 0;
+					threeEastImg.style.transform = "rotate(" + ((deg + 180) % 360) + "deg)";
 				});
 				let threeSouthBlock = document.querySelector("#three-south-block");
 				let threeSouthImg = document.querySelector("#three-south>img");
 				document.querySelector("#three-south").addEventListener("click", function(){
 					threeSouthBlock.classList.toggle("show");
-					let deg = threeSouthImg.style.transform.slice(threeSouthImg.style.transform.indexOf("(") + 1, threeSouthImg.style.transform.indexOf("deg)"));
-					rotateElement(threeSouthImg, deg, (deg + 180) % 360);
+					let m = threeSouthImg.style.transform.match(/rotate\(([-\d.]+)deg\)/);
+					let deg = m ? parseFloat(m[1]) : 0;
+					threeSouthImg.style.transform = "rotate(" + ((deg + 180) % 360) + "deg)";
 				});
 				 
 				var fourDiv = document.querySelector("#fourCanvas");
 				var fourChart = new Chart(fourDiv, {
 					type: "line",
 					data: {
-						labels: "          ",
+						labels: [],
 						datasets: [{
 							label: "",
 							data: [],
@@ -866,32 +857,39 @@
 					options: {
 						scales: {
 							x:{
+								type: "linear",
 								grid:{
-									display:false
+									display: false
 								},
 								border:{
-									didplay: false
+									display: false
+								},
+								ticks: {
+									display: false
 								}
 							},
 							y:{
-								drawBorder: false, 
-								beginAtZero: false,
 								grid:{
-									display:true
+									display: true
 								},
 								border: {
-									display:false
+									display: false	//控制是否画坐标轴的边线
 								},
 								ticks: {
 									autoSkip: true, // 确保自动跳过多余的标签
 									maxTicksLimit: 4, // 可以根据需要设置最大刻度数，如果需要
 									stepSize: 1, // 可以设置刻度之间的间隔，如果需要
+									beginAtZero: false,	//控制纵轴是否强制从 0 开始
 									callback: function(value) {
 										return value % 1 === 0 ? (4 - Math.floor(value) + 1) + "位" : "";
 									}
 								},
 								min: 1,
-								max: 4
+								max: 4,
+								afterBuildTicks: function(axis) {
+									axis.min = 0.5;
+									axis.max = 4.5;
+								}
 							}
 						},animation: {
 							duration: 0, // general animation time
@@ -910,7 +908,7 @@
 				var threeChart = new Chart(threeDiv, {
 					type: "line",
 					data: {
-						labels: "          ",
+						labels: [],
 						datasets: [{
 							label: "",
 							data: [],
@@ -924,32 +922,39 @@
 					options: {
 						scales: {
 							x:{
+								type: "linear",
 								grid:{
-									display:false
+									display: false
 								},
 								border:{
-									didplay: false
+									display: false
+								},
+								ticks: {
+									display: false
 								}
 							},
 							y:{
-								drawBorder: false, 
-								beginAtZero: false,
 								grid:{
-									display:true
+									display: true
 								},
 								border: {
-									display:false
+									display: false	//控制是否画坐标轴的边线
 								},
 								ticks: {
 									autoSkip: true, // 确保自动跳过多余的标签
 									maxTicksLimit: 3, // 可以根据需要设置最大刻度数，如果需要
 									stepSize: 1, // 可以设置刻度之间的间隔，如果需要
+									beginAtZero: false,	//控制纵轴是否强制从 0 开始
 									callback: function(value) {
 										return value % 1 === 0 ? (3 - Math.floor(value) + 1) + "位" : "";
 									}
 								},
 								min: 1,
-								max: 3
+								max: 3,
+								afterBuildTicks: function(axis) {
+									axis.min = 0.5;
+									axis.max = 3.5;
+								}
 							}
 						},animation: {
 							duration: 0, // general animation time
@@ -976,6 +981,7 @@
 				div.style.right = "0";
 				div.style.textAlign = "right";
 				div.style.color = "#333333";
+				div.style.fontSize = "0.75rem";
 				document.body.appendChild(div);
 			 });
 		</script>

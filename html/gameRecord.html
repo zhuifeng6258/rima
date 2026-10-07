@@ -16,6 +16,7 @@
 				padding: 0;
 				outline: 0;
 				font-size: 1rem;
+				box-sizing: border-box;
 			}
 			html,body{height:100%;}	/*解决html5中document.body.clientHeight返回0的问题*/
 			html{overflow:hidden;}
@@ -366,13 +367,13 @@
 					elem: '#endDate'
 				});
 				document.querySelector("#search").addEventListener("click", function(event){
-					var startDate = document.querySelector("#startDate").value;
-					var endDate = document.querySelector("#endDate").value;
+					startDate = document.querySelector("#startDate").value;
+					endDate = document.querySelector("#endDate").value;
 					if(judgeObject(startDate) && judgeObject(endDate) && endDate < startDate){
 						layer.msg("结束日期不能小于开始日期");
 						return false;
 					}
-					var mode = new Array();
+					mode = new Array();
 					document.querySelectorAll("input[name=mode]:checked").forEach(function(currentValue, index, arr){
 						mode.push(currentValue.value);
 					});
@@ -380,7 +381,7 @@
 						layer.msg("至少选择一种模式");
 						return false;
 					}
-					var type = new Array();
+					type = new Array();
 					document.querySelectorAll("input[name=type]:checked").forEach(function(currentValue, index, arr){
 						type.push(currentValue.value);
 					});
@@ -388,7 +389,7 @@
 						layer.msg("至少选择一种类型");
 						return false;
 					}
-					var person = document.querySelector("#person").value;
+					person = document.querySelector("#person").value;
 					loadData({"curr" : 1, "limit" : currentLimit, "startDate" : startDate, "endDate" : endDate, "mode" : mode, "type" : type, "person" : person});
 				});
 				var laypage = layui.laypage;
@@ -413,7 +414,7 @@
 						jump: function(obj, first){
 							// 首次不执行
 							if(!first){
-								var currentLimit = obj.limit;
+								currentLimit = obj.limit;
 								loadData({"curr" : obj.curr, "limit" : obj.limit, "startDate" : startDate, "endDate" : endDate, "mode" : mode, "type" : type, "person" : person});
 							}
 						}
@@ -423,57 +424,64 @@
 					let no;
 					for(let d in data){
 						let l = li.cloneNode(true);
-						if(data[d].mode == 3){
+						if(data[d].mode == "3"){
 							if(parseInt(data[d].firstScore) + parseInt(data[d].secondScore) + parseInt(data[d].thirdScore) != 105000){
 								error = true;
-								console.log(data[d]);
+								console.error("数据校验失败：", data[d])
 							}
 							l.querySelector(".content-table").removeChild(l.querySelector(".content-row:last-child"));
 							l.querySelector(".content-top>div:first-child>span:first-child").innerText = "三人";
-						}else if(data[d].mode == 4){
+						}else if(data[d].mode == "4"){
 							if(parseInt(data[d].firstScore) + parseInt(data[d].secondScore) + parseInt(data[d].thirdScore) + parseInt(data[d].fourthScore) != 100000){
 								error = true;
-								console.log(data[d]);
+								console.error("数据校验失败：", data[d])
 							}
 							l.querySelector(".content-top>div:first-child>span:first-child").innerText = "四人";
 						}
 						if(data[d].type == "east"){
-							l.querySelector(".content-table").removeChild(l.querySelector(".content-table>.content-row:last-child"));
 							l.querySelector(".content-top>div:first-child>span:first-child").innerText = l.querySelector(".content-top>div:first-child>span:first-child").innerText + "东";
 						}else if(data[d].type == "south"){
 							l.querySelector(".content-top>div:first-child>span:first-child").innerText = l.querySelector(".content-top>div:first-child>span:first-child").innerText + "南";
 						}
 						l.querySelector(".content-top>div:nth-child(2)>span:first-child").innerText = data[d].date;
-						l.querySelector(".content-top>div>span:last-child").innerText = data[d].number + "回战";
+						l.querySelector(".content-top>div:first-child>span:last-child").innerText = data[d].number + "回战";
 						l.querySelector(".content-table>.content-row:nth-child(2)>.content-data:nth-child(2)").innerText = data[d].first;
 						l.querySelector(".content-table>.content-row:nth-child(2)>.content-data:last-child").innerText = data[d].firstScore;
 						l.querySelector(".content-table>.content-row:nth-child(3)>.content-data:nth-child(2)").innerText = data[d].second;
 						l.querySelector(".content-table>.content-row:nth-child(3)>.content-data:last-child").innerText = data[d].secondScore;
 						l.querySelector(".content-table>.content-row:nth-child(4)>.content-data:nth-child(2)").innerText = data[d].third;
 						l.querySelector(".content-table>.content-row:nth-child(4)>.content-data:last-child").innerText = data[d].thirdScore;
-						if(data[d].mode == 4){
+						if(data[d].mode == "4"){
 							l.querySelector(".content-table>.content-row:last-child>.content-data:nth-child(2)").innerText = data[d].fourth;
 							l.querySelector(".content-table>.content-row:last-child>.content-data:last-child").innerText = data[d].fourthScore;
 						}
 						ul.appendChild(l);
-						if(error){
-							layer.msg("部分数据有误");
-						}
 					}
+					if(error){
+						layer.msg("部分数据有误");
+					}
+				}
+				
+				function parseDate(str){
+					if(!str) {
+						return null;
+					}
+					let p = str.split("-");
+					return new Date(+p[0], +p[1] - 1, +p[2]);
 				}
 				
 				function deal(json, obj){
 					let data = new Array();
 					json.data.forEach(function(currentValue, index, arr){
-						let date = new Date(currentValue.date);
+						let date = parseDate(currentValue.date);
 						if(judgeObject(obj.startDate)){
-							let startDate = new Date(obj.startDate);
+							let startDate = parseDate(obj.startDate);
 							if(date < startDate){
 								return;
 							}
 						}
 						if(judgeObject(obj.endDate)){
-							let endDate = new Date(obj.endDate);
+							let endDate = parseDate(obj.endDate);
 							if(date > endDate){
 								return;
 							}
@@ -529,12 +537,13 @@
 					document.querySelector("#startDate").value = "";
 					document.querySelector("#endDate").value = "";
 					document.querySelectorAll("input[name=mode]").forEach(function(currentValue, index, arr){
-						currentValue.checked = "true";
+						currentValue.checked = true;
 					});
 					document.querySelectorAll("input[name=type]").forEach(function(currentValue, index, arr){
-						currentValue.checked = "true";
+						currentValue.checked = true;
 					});
 					document.querySelector("#person").value = "";
+					document.querySelector("#search").click();
 				};
 				
 				var li = document.querySelector(".list>ul>li");
@@ -565,6 +574,7 @@
 				div.style.right = "0";
 				div.style.textAlign = "right";
 				div.style.color = "#333333";
+				div.style.fontSize = "0.75rem";
 				document.body.appendChild(div);
 			 });
 		</script>
