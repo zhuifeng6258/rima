@@ -733,12 +733,12 @@
 					}
 					for(let i in result.data.four.lately){
 						result.data.four.lately[i].y = 4 - result.data.four.lately[i].y + 1;
+						result.data.four.lately[i].x = result.data.four.lately.length - 1 - Number(i);
 					}
-					result.data.four.lately.reverse();
 					for(let i in result.data.three.lately){
 						result.data.three.lately[i].y = 3 - result.data.three.lately[i].y + 1;
+						result.data.three.lately[i].x = result.data.three.lately.length - 1 - Number(i);
 					}
-					result.data.three.lately.reverse();
 					if(result.data.four.east.count > 0){
 						result.data.four.east.first = (tempObject.four.east.first / result.data.four.east.count * 100).toFixed(2) + "%";
 						result.data.four.east.second = (tempObject.four.east.second / result.data.four.east.count * 100).toFixed(2) + "%";
